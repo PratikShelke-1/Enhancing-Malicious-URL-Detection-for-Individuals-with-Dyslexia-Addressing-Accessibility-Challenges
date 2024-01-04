@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Malicious URL Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: #fff;
+            height: 600px;
+            text-align:center;
+        }
+
+        .realcontainer {
+            max-width: 1000px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            height: 300px;
+        }
+
+        .fakecontainer {
+            max-width: 1000px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            height: 300px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 45px;
+            font-weight: lighter;
+        }
+        .step {
+            display: block;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step p {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #progressBar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+
+            #progressBar .proceed {
+                background-color: #81b3b3;
+                padding: 20px;
+                font-size: 20px;
+                font-weight: 600;
+                color: #896c6c;
+                text-align: center;
+                margin-left: 180px;
+            }
+        .fakecontainer #progressBar .proceed {
+            background-color: #edb5ade3;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #896c6c;
+            text-align: center;
+            margin-left: 180px;
+        }
+        .stepProgress {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            text-align: center;
+        }
+
+        .stepProgress1 {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: red;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            text-align: center;
+        }
+
+        .stepProgress.active {
+            background-color: #4CAF50;
+        }
+        .fakecontainer .stepProgress.active {
+            background-color: #edb5ade3;
+        }
+        table thead tr {
+            background-color: green;
+            border: solid 1px green;
+            padding: 10px;
+            text-align: left;
+            font-size: 25px;
+            font-weight: 600;
+        }
+
+        table tbody tr {
+            font-weight: 600;
+            border: solid 1px #205050;
+            color: #333;
+            font-size: 16px;
+            background-color: #81b3b3;
+        }
+
+        .fakecontainer table thead tr {
+            background-color: red;
+            border: solid 1px red;
+            padding: 10px;
+            text-align: left;
+            font-size: 25px;
+            font-weight: 600;
+        }
+
+        .fakecontainer table tbody tr td {
+            font-weight: 600;
+            border: solid 1px #205050;
+            color: #333;
+            font-size: 16px;
+            background-color: #edb5ade3;
+        }
+
+        .fakecontainer table tr {
+            background-color: #DDEFEF;
+            border: solid 1px #DDEEEE;
+            color: #336B6B;
+            padding: 10px;
+            text-align: left;
+        }
+        .proceed.active {
+            background-color: #4CAF50;
+        }
+
+        .fakecontainer .proceed.active {
+            background-color: #edb5ade3;
+        }
+        .input-select-field {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-select-field input,
+        .input-select-field select {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+
+        #globalPageHeader h1[title='Real'] {
+            color: green;
+            text-decoration: underline;
+        }
+
+        #globalPageHeader h1[title='Fake'] {
+            color: red;
+            text-decoration: underline;
+        }
+        #accuracy {
+            display: block;
+            font-size: 30px;
+            font-weight: bold;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+            padding-left: 28px;
+            border-radius: 10px;
+        }
+
+        p {
+            font-size: 30px;
+        }
+    </style>
+    <script>
+        function showFake() {
+            event.preventDefault(); // Prevent form submission
+            document.getElementById('fake').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+            console.log(event.target.parentNode.querySelector('input').value);
+            const value = document.querySelector('[title="{{binderList}}"]').textContent;
+            console.log(value);
+            localStorage.setItem('submitvalue', event.target.parentNode.querySelector('input').value);
+            if(value=='Real'){
+                document.body.style.background = "green";
+            }
+            else{
+                document.body.style.background = "#D70040";
+            }
+            document.getElementById("multiStepForm").style.display = "none";
+            showAccuracy();
+        }
+
+        function showReal() {
+            event.preventDefault();
+            document.getElementById('real').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+            console.log(event.target.parentNode.querySelector('input').value);
+            const value = document.querySelector('[title="{{binderList}}"]').textContent;
+            console.log(value);
+            if(value=='Real'){
+                document.body.style.background = "green";
+            }
+            else{
+                document.body.style.background = "#D70040";
+            }
+            localStorage.setItem('submitvalue', event.target.parentNode.querySelector('input').value);
+            document.getElementById("multiStepForm").style.display = "none";
+            showAccuracy();
+            
+        }
+        function showAccuracy() {
+                    var submitValue = localStorage.getItem('submitvalue');
+                    var binderValue = document.querySelector('[title="{{binderList}}"]').textContent;
+                    var accuracyContainer = document.getElementById('accuracy');
+                    var accuracyContainer1 = document.getElementById('accuracy1');
+                    if (submitValue === binderValue) {
+                        console.log("100%");
+                        accuracyContainer.textContent = '100%';
+                        accuracyContainer1.textContent = '100%';
+                    } else {
+                        console.log("0%");
+                        accuracyContainer.textContent = '0%';
+                        accuracyContainer1.textContent = '0%';
+                    }
+                }
+    </script>
+
+</head>
+
+<body>
+    <div id="multiStepForm" class="container">
+        <div id="step2">
+            <h1>
+                Check the website is <span style="color: green; text-decoration: underline;">Real</span> or <span
+                    style="color: red; text-decoration: underline;">Fake</span>
+            </h1>
+            <div id="progressBar">
+                <div class="stepProgress active"><a href="/">Step1</a></div>
+                <div class="stepProgress active">Step2</div>
+                <div class="stepProgress">Step3</div>
+            </div> <br>
+
+                   <div id="globalPageHeader">
+                       <p>
+                           The Site is : <h1 style="background-color: white ; padding:10px; border-radius:5%;" title='{{binderList}}'>{{binderList}}</h1>
+                       </p>
+
+                   </div>
+            <br>
+            <div class="step">
+                <p>Is the website fake or real</p>
+                <div id="progressBar">
+                    <div class="stepProgress active">
+                        <input type="submit" name="Real" value="Real" onclick="showReal();">
+                    </div>
+
+                    <div class="stepProgress1">
+                        <input type="submit" name="Fake" style="background-color: red;" value="Fake" onclick="showFake();">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="wrapper">
+        <div id="real" style="display: none">
+            <div class="realcontainer">
+                <div id="step2">
+                    <h1>
+                        RESULT
+                    </h1>
+
+                    <div id="globalPageHeader">
+                        <table>
+                            <thead>
+                            <td>Website</td>
+                            <td>Result</td>
+                            <td>Accuracy %</td>
+                            </thead>
+                            <tr>
+                                <td>{{url}}</td>
+                                <td>{{binderList}}</td>
+                                <td><div id="accuracy"></div></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <br>
+                </div>
+                <div id="progressBar">
+                    <div class="proceed"><a href="/">Proceed</a></div>
+                </div>
+            </div>
+            
+           
+        </div>
+
+        <div id="fake" style="display: none">
+            <div class="fakecontainer">
+                <div id="step2">
+                    <h1>
+                        RESULT
+                    </h1>
+
+                    <div id="globalPageHeader">
+                        <table>
+                            <thead>
+                            <td>Website</td>
+                            <td>Result</td>
+                            <td>Accuracy %</td>
+                            </thead>
+                            <tr>
+                                <td>{{url}}</td>
+                                <td>{{binderList}}</td>
+                                <td><div id="accuracy1"></div></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <br>
+                </div>
+                <div id="progressBar">
+                    <div class="proceed"><a href="/">Proceed</a></div>
+                </div>
+            </div>
+    
+   
+
+    
+    </div>
+        <script>
+            window.onload = function () {
+                var currentStep = 0;
+                var steps = document.getElementsByClassName('step');
+                var stepProgresses = document.getElementsByClassName('stepProgress');
+
+                function showStep(n) {
+                    steps[n].classList.add("active");
+                    stepProgresses[n].classList.add("active");
+
+                    for (var i = 0; i < steps.length; i++) {
+                        if (i !== n) {
+                            steps[i].classList.remove("active");
+                            if (i < n) {
+                                stepProgresses[i].classList.add("active");
+                            }
+                            else {
+                                stepProgresses[i].classList.remove("active");
+                                console.log(stepProgresses[i]);
+                            }
+                        }
+
+                    }
+                }               
+            }
+
+
+        </script>
+</body>
+
+</html>
